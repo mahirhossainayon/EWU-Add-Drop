@@ -51,6 +51,22 @@ $listResult = $stmt->get_result();
 $listedProducts = $listResult->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 ?>
+<?php
+// ================= BUY REQUESTS (SELLER SIDE) =================
+$stmt = $conn->prepare("
+    SELECT o.*, p.name AS product_name, u.name AS buyer_name, u.phone AS buyer_phone
+    FROM orders o
+    JOIN products p ON o.product_id = p.id
+    JOIN users u ON o.buyer_id = u.id
+    WHERE p.user_id = ?
+    ORDER BY o.id DESC
+");
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$ordersResult = $stmt->get_result();
+$orders = $ordersResult->fetch_all(MYSQLI_ASSOC);
+$stmt->close();
+?>
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -183,6 +199,65 @@ body {
     .dashboard-container { flex-direction: column; }
     .left-panel { position: relative; top: 0; }
 }
+/* ================= BUY REQUESTS ================= */
+.panel.orders-panel h2 {
+    margin-bottom: 15px;
+    color: #1c3a70;
+}
+
+/* Container grid same as products */
+.orders-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+/* Individual order card */
+.order-card {
+    border: 1px solid #ddd;
+    border-radius: 12px;
+    padding: 15px;
+    width: 260px; /* a bit wider than normal product card */
+    text-align: left;
+    background: #fff;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.order-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+}
+
+.order-card h3 {
+    font-size: 16px;
+    color: #1c3a70;
+    margin-bottom: 8px;
+}
+
+.order-card p {
+    font-size: 14px;
+    margin: 4px 0;
+}
+
+.order-card .status {
+    font-weight: bold;
+    color: green;
+}
+.delete-btn {
+    width: 100%;
+    padding: 8px;
+    margin-top: 10px;
+    border: none;
+    border-radius: 8px;
+    background: #ff4d4d;
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.delete-btn:hover {
+    background: #cc0000;
+}
 </style>
 </head>
 <body>
@@ -255,6 +330,35 @@ body {
                 </div>
             <?php endif; ?>
         </div>
+        <!-- BUY REQUESTS -->
+<div class="panel orders-panel">
+    <h2>Buyer Requests</h2>
+
+    <?php if(count($orders) === 0): ?>
+        <p>No requests yet.</p>
+    <?php else: ?>
+        <div class="orders-grid">
+            <?php foreach($orders as $o): ?>
+                <div class="order-card">
+                    <h3><?= htmlspecialchars($o['product_name']); ?></h3>
+                    <p><strong>Buyer:</strong> <?= htmlspecialchars($o['buyer_name']); ?></p>
+                    <p><strong>Phone:</strong> <?= htmlspecialchars($o['buyer_phone']); ?></p>
+                    <p><strong>Payment:</strong> <?= htmlspecialchars($o['payment_method']); ?></p>
+                    <p><strong>Meeting:</strong> <?= htmlspecialchars($o['meeting_place']); ?></p>
+
+                    <!-- DELETE BUTTON -->
+                    <form method="POST" action="delete_order.php">
+                        <input type="hidden" name="order_id" value="<?= $o['id']; ?>">
+                        <button type="submit" class="delete-btn"
+                            onclick="return confirm('Are you sure?')">
+                            Delete Request
+                        </button>
+                    </form>
+                </div>
+            <?php endforeach; ?>
+        </div>
+    <?php endif; ?>
+</div>
 
     </div>
 

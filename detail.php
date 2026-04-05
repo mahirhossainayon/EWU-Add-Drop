@@ -85,7 +85,22 @@ a { text-decoration: none; color: inherit; } /* Remove underline globally */
 .success-message { background:#d4edda; color:#155724; padding:10px 15px; margin:20px auto; border-radius:8px; max-width:1200px; text-align:center; }
 .buttons-container { margin-top:20px; }
 .seller-info strong { display:inline-block; min-width:80px; }
-
+/* ================= BUY BUTTON ================= */
+.buy-btn {
+    display: inline-block;
+    margin: 5px 5px 0 0;
+    padding: 8px 34px;
+    background: #155724;
+    color: #fff;
+    border-radius: 8px;
+    font-size: 14px;
+    text-align: center;
+    transition: 0.3s;
+}
+.buy-btn:hover {
+    background: #fff;
+    color: #1c3a70;
+}
 /* ================= SAME CATEGORY PRODUCTS ================= */
 .products.same-category-products { max-width:1200px; margin:40px auto; padding:0 15px; }
 .products.same-category-products h2 { color:#1c3a70; margin-bottom:20px; }
@@ -205,6 +220,11 @@ a { text-decoration: none; color: inherit; } /* Remove underline globally */
     <a href="report_user.php?id=<?= $product['id']; ?>" class="explore-btn">
         <i class="fa-solid fa-user-slash"></i> Report Seller
     </a>
+    <?php if($product['user_id'] != $_SESSION['user_id']): ?>
+   <a href="buy.php?id=<?= $product['id']; ?>" class="explore-btn buy-btn">
+    Buy Now
+</a>
+<?php endif; ?>
 <?php endif; ?>
             <?php endif; ?>
         </div>
